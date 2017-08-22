@@ -20,10 +20,9 @@ public class ClimaController {
         DataInputStream dis = new DataInputStream(new FileInputStream(path));
         
         dis.readByte();
-        boolean continua = true;
         ArrayList<ClimaDoDia> listaClima = new ArrayList<ClimaDoDia>();
         
-        while(continua){
+        while(true){
             String data = "";
             String direcao = "";
             int velocidade;
@@ -37,12 +36,11 @@ public class ClimaController {
                 data = data.trim();
                 
                 for(int i = 0; i < 4; i++)
-                    direcao += (char)dis.readByte();
-
+                    direcao += (char)dis.readByte();       
+                
                 velocidade = dis.readInt();
                 indicePluviometrico = dis.readInt();
                 temperatura = dis.readDouble();
-                
                 
                 Date date = formataData(data);
                 
@@ -50,7 +48,7 @@ public class ClimaController {
                 listaClima.add(clima);
                 dis.readByte();
             }catch(EOFException eo){
-                continua = false;
+                break;
             }
         }
         dis.close();
@@ -77,9 +75,8 @@ public class ClimaController {
         } catch (ParseException ex) {
             Logger.getLogger(ClimaController.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        for(ClimaDoDia c : listaClima){
+       
+        for(ClimaDoDia c : listaClima)
             System.out.println(c);
-        }
     }
 }
