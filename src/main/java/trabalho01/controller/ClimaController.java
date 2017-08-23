@@ -57,8 +57,9 @@ public class ClimaController {
             }
         }
 
-        for (ClimaDoDia c : listaClima)
+        for (ClimaDoDia c : listaClima) {
             System.out.println(c);
+        }
 
         dis.close();
         return listaClima;
@@ -71,17 +72,14 @@ public class ClimaController {
         Date date = clima.get(0).getData();
 
         for (ClimaDoDia setClima : clima) {
-            if (setClima.getData() == null) {
+            if (setClima.getData() == null)
                 throw new NullDataExeption();
-            }
 
-            if (set.contains(setClima.getData())) {
+            if (set.contains(setClima.getData()))
                 throw new DuplicatedException();
-            }
 
-            if (setClima.getData().before(date)) {
+            if (setClima.getData().before(date))
                 throw new OrdenDataException();
-            }
 
             set.add(setClima.getData());
             date = setClima.getData();
@@ -90,15 +88,18 @@ public class ClimaController {
 
     @SuppressWarnings("deprecation")
     public void separaMes(ArrayList<ClimaDoDia> clima) throws IOException {
+        AplicationDate aplicationDate = new AplicationDate();
         ArrayList<ClimaDoDia> climaMes = new ArrayList<>();
-        Date mesAtual = clima.get(0).getData();
+
+        String mesAtual = aplicationDate.formataData(clima.get(0).getData(), "mm");
+        System.out.println(mesAtual);
 
         for (ClimaDoDia climaDoDia : clima) {
-            if (climaDoDia.getData().getMonth() == mesAtual.getMonth()) {
+            if (mesAtual.equals(aplicationDate.formataData(climaDoDia.getData(), "mm"))) {
                 climaMes.add(climaDoDia);
             } else {
                 criaArquivos(climaMes);
-                mesAtual = climaDoDia.getData();
+                mesAtual = aplicationDate.formataData(climaDoDia.getData(), "mm");
                 climaMes.clear();
             }
         }
@@ -106,14 +107,64 @@ public class ClimaController {
 
     @SuppressWarnings("deprecation")
     public void criaArquivos(ArrayList<ClimaDoDia> clima) throws FileNotFoundException, IOException {
-        
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-mm");
-        String data = df.format(clima.get(0).getData());
+
+        AplicationDate aplicationDate = new AplicationDate();
+        String data = aplicationDate.formataData(clima.get(0).getData(), "yyyy-mm");
 
         Path path = Paths.get(data + ".dat");
 
         ObjectOutputStream file = new ObjectOutputStream(new FileOutputStream(path.toFile()));
         file.writeObject(clima);
         file.close();
+    }
+
+    public String geraRelatorio(ArrayList<ClimaDoDia> climaDoMes) {
+        int acumuloChuva = 0;
+        int velocidade = 0;
+        ClimaDoDia maiorVelocidade = new ClimaDoDia();
+        ClimaDoDia menorVelocidade = climaDoMes.get(0);
+        double temperatura = 0;
+        ClimaDoDia maiorTemperatura = new ClimaDoDia();
+        ClimaDoDia menorTemperatura = climaDoMes.get(0);
+        
+        for (ClimaDoDia c : climaDoMes) {
+            acumuloChuva += c.getIndicePluviometrico();
+            velocidade += c.getVentoVelocidade();
+            temperatura += c.getTemperatura();
+            
+            if (c.getVentoVelocidade() > maiorVelocidade.getVentoVelocidade())
+                maiorVelocidade = c;
+            
+            if(c.getVentoVelocidade() < menorVelocidade.getVentoVelocidade())
+                menorVelocidade = c;
+                
+            if(c.getTemperatura() > maiorTemperatura.getTemperatura())
+                maiorTemperatura = c;
+            
+            if(c.getTemperatura() < menorTemperatura.getTemperatura())
+                menorTemperatura = c;
+        }
+        
+        double velocidadeMedia = velocidade / climaDoMes.size();
+        double temperaturaMedia = temperatura / climaDoMes.size();
+        
+        AplicationDate aplicationDate = new AplicationDate();
+        String data = aplicationDate.formataData(climaDoMes.get(0).getData(), "mm/yyyy");
+        
+        return "Mês: " + data + 
+                "\n Quantidade de dias considerados: " + climaDoMes.size() + 
+                "\n Acumulado de chuva: " + acumuloChuva + 
+                " mm \n Velocidade média do vento: " + velocidadeMedia + 
+                " km/h \n Maior velocidade do vento: " + maiorVelocidade.getVentoVelocidade() + 
+                "km/h em " + aplicationDate.formataData(maiorVelocidade.getData(), "dd/mm/yyyy") + 
+                " na direção " + maiorVelocidade.getVentoDirecao() + 
+                "\n Maior velocidade do vento: " + maiorVelocidade.getVentoVelocidade() + 
+                "km/h em " + aplicationDate.formataData(menorVelocidade.getData(), "dd/mm/yyyy") + 
+                " na direção " + menorVelocidade.getVentoDirecao() + 
+                "\n Temperatura média: " + temperaturaMedia + " ºC" +
+                "\n Maior temperatura: " + maiorTemperatura.getTemperatura() + 
+                "ºC em " + aplicationDate.formataData(maiorTemperatura.getData(), "dd/mm/yyyy") + 
+                "\n Menor temperatura: " + menorTemperatura.getTemperatura() + 
+                "ºC em " + aplicationDate.formataData(menorTemperatura.getData(), "dd/mm/yyyy");
     }
 }

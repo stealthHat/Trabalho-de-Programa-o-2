@@ -3,6 +3,7 @@ package trabalho01.model;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import trabalho01.commons.AplicationDate;
 
 import trabalho01.commons.AplicationModel;
 
@@ -72,8 +73,10 @@ public class ClimaDoDia extends AplicationModel implements Serializable {
     
     @Override
     public String toString(){
-        SimpleDateFormat df = new SimpleDateFormat("dd/mm/yyyy");
-        String conteudo = df.format(data) + "-" + ventoDirecao + "-" + 
+        AplicationDate aplicationDate = new AplicationDate();
+        String dataString = aplicationDate.formataData(data, "dd/mm/yyyy");
+        
+        String conteudo = dataString + "-" + ventoDirecao + "-" + 
                 ventoVelocidade + "-" + indicePluviometrico + "-" + temperatura;
         return conteudo;
     }
