@@ -5,8 +5,13 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -20,95 +25,95 @@ import trabalho01.model.ClimaDoDia;
 
 public class ClimaController {
 
-	public ArrayList<ClimaDoDia> leBinario(String path) throws FileNotFoundException, IOException, ParseException {
-		AplicationDate aplicationDate = new AplicationDate();
-		DataInputStream dis = new DataInputStream(new FileInputStream(path));
-		ArrayList<ClimaDoDia> listaClima = new ArrayList<ClimaDoDia>();
+    public ArrayList<ClimaDoDia> leBinario(String path) throws FileNotFoundException, IOException, ParseException {
+        AplicationDate aplicationDate = new AplicationDate();
+        DataInputStream dis = new DataInputStream(new FileInputStream(path));
+        ArrayList<ClimaDoDia> listaClima = new ArrayList<ClimaDoDia>();
 
-		while (true) {
-			String data = "";
-			String direcao = "";
-			int velocidade;
-			int indicePluviometrico;
-			Double temperatura;
+        while (true) {
+            String data = "";
+            String direcao = "";
+            int velocidade;
+            int indicePluviometrico;
+            Double temperatura;
 
-			try {
-				data = dis.readUTF();
-				
-				System.out.println(data);
-				
-				direcao += dis.readChar();
-				direcao += dis.readChar();
-				
-				System.out.println(direcao);
-				
-				velocidade = dis.readInt();
-				indicePluviometrico = dis.readInt();
-				temperatura = dis.readDouble();
+            try {
+                data = dis.readUTF();
 
-				Date date = aplicationDate.formataData(data);
-				
-				ClimaDoDia clima = new ClimaDoDia(date, direcao, velocidade, indicePluviometrico, temperatura);
-				listaClima.add(clima);
-			} catch (EOFException eo) {
-				eo.printStackTrace();
-				break;
-			}
-		}
-		
-		for(ClimaDoDia c : listaClima)
-			System.out.println(c);
-		
-		dis.close();
-		return listaClima;
-	}
-	
-	public ArrayList<ClimaDoDia> leBinarasdio(String path) {
-		
-		return null;
-	}
+                direcao += dis.readChar();
+                direcao += dis.readChar();
 
-	public void chacaDataa(ArrayList<ClimaDoDia> clima)
-			throws DuplicatedException, NullDataExeption, OrdenDataException {
+                velocidade = dis.readInt();
+                indicePluviometrico = dis.readInt();
+                temperatura = dis.readDouble();
 
-		Set<Date> set = new HashSet<Date>();
-		Date date = clima.get(0).getData();
+                Date date = aplicationDate.formataData(data);
 
-		for (ClimaDoDia setClima : clima) {
-			if (setClima.getData() == null)
-				throw new NullDataExeption();
+                ClimaDoDia clima = new ClimaDoDia(date, direcao, velocidade, indicePluviometrico, temperatura);
+                listaClima.add(clima);
+            } catch (EOFException eo) {
+                eo.printStackTrace();
+                break;
+            }
+        }
 
-			if (set.contains(setClima.getData()))
-				throw new DuplicatedException();
+        for (ClimaDoDia c : listaClima)
+            System.out.println(c);
 
-			if (setClima.getData().before(date))
-				throw new OrdenDataException();
+        dis.close();
+        return listaClima;
+    }
 
-			set.add(setClima.getData());
-			date = setClima.getData();
-		}
-	}
+    public void chacaDataa(ArrayList<ClimaDoDia> clima)
+            throws DuplicatedException, NullDataExeption, OrdenDataException {
 
-	@SuppressWarnings("deprecation")
-	public void separaMes(ArrayList<ClimaDoDia> clima) {
-		ArrayList<ClimaDoDia> climaMes = new ArrayList<ClimaDoDia>();
-		Date mesAtual = clima.get(0).getData();
+        Set<Date> set = new HashSet<Date>();
+        Date date = clima.get(0).getData();
 
-		for (ClimaDoDia climaDoDia : clima) {
-			if (climaDoDia.getData().getMonth() == mesAtual.getMonth()) {
-				climaMes.add(climaDoDia);
-			} else {
-				criaArquivos(climaMes);
-				mesAtual = climaDoDia.getData();
-				climaMes.clear();
-			}
-		}
-	}
+        for (ClimaDoDia setClima : clima) {
+            if (setClima.getData() == null) {
+                throw new NullDataExeption();
+            }
 
-	private void criaArquivos(ArrayList<ClimaDoDia> clima) {
-		AplicationDate aplicationDate = new AplicationDate();
-		File outFile = new File(
-				String.valueOf(clima.get(0).getData().getYear() + clima.get(0).getData().getMonth()) + ".dat");
+            if (set.contains(setClima.getData())) {
+                throw new DuplicatedException();
+            }
 
-	}
+            if (setClima.getData().before(date)) {
+                throw new OrdenDataException();
+            }
+
+            set.add(setClima.getData());
+            date = setClima.getData();
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    public void separaMes(ArrayList<ClimaDoDia> clima) throws IOException {
+        ArrayList<ClimaDoDia> climaMes = new ArrayList<>();
+        Date mesAtual = clima.get(0).getData();
+
+        for (ClimaDoDia climaDoDia : clima) {
+            if (climaDoDia.getData().getMonth() == mesAtual.getMonth()) {
+                climaMes.add(climaDoDia);
+            } else {
+                criaArquivos(climaMes);
+                mesAtual = climaDoDia.getData();
+                climaMes.clear();
+            }
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    public void criaArquivos(ArrayList<ClimaDoDia> clima) throws FileNotFoundException, IOException {
+        
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-mm");
+        String data = df.format(clima.get(0).getData());
+
+        Path path = Paths.get(data + ".dat");
+
+        ObjectOutputStream file = new ObjectOutputStream(new FileOutputStream(path.toFile()));
+        file.writeObject(clima);
+        file.close();
+    }
 }
