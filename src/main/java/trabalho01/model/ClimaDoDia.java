@@ -72,7 +72,7 @@ public class ClimaDoDia extends AplicationModel implements Serializable {
     
     @Override
     public String toString(){
-        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("dd/mm/yyyy");
         String conteudo = df.format(data) + "-" + ventoDirecao + "-" + 
                 ventoVelocidade + "-" + indicePluviometrico + "-" + temperatura;
         return conteudo;

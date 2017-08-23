@@ -9,6 +9,6 @@ public class DuplicatedException extends Exception {
 	private static final long serialVersionUID = 6548610719235298413L;
 
 	public DuplicatedException() {
-		JOptionPane.showConfirmDialog(null, "Existem datas duplicadas");
+		JOptionPane.showMessageDialog(null, "Existem datas duplicadas");
 	}
 }

@@ -8,7 +8,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -24,12 +23,9 @@ public class ClimaController {
 	public ArrayList<ClimaDoDia> leBinario(String path) throws FileNotFoundException, IOException, ParseException {
 		AplicationDate aplicationDate = new AplicationDate();
 		DataInputStream dis = new DataInputStream(new FileInputStream(path));
-
-		dis.readByte();
-		boolean continua = true;
 		ArrayList<ClimaDoDia> listaClima = new ArrayList<ClimaDoDia>();
 
-		while (continua) {
+		while (true) {
 			String data = "";
 			String direcao = "";
 			int velocidade;
@@ -37,30 +33,36 @@ public class ClimaController {
 			Double temperatura;
 
 			try {
-				for (int i = 0; i < 11; i++)
-					data += (char) dis.readByte();
-
-				data = data.trim();
-
-				for (int i = 0; i < 4; i++)
-					direcao += (char) dis.readByte();
-
+				data = dis.readUTF();
+				
+				System.out.println(data);
+				
+				direcao += dis.readChar();
+				direcao += dis.readChar();
+				
+				System.out.println(direcao);
+				
 				velocidade = dis.readInt();
 				indicePluviometrico = dis.readInt();
 				temperatura = dis.readDouble();
 
 				Date date = aplicationDate.formataData(data);
-
+				
 				ClimaDoDia clima = new ClimaDoDia(date, direcao, velocidade, indicePluviometrico, temperatura);
 				listaClima.add(clima);
-				dis.readByte();
 			} catch (EOFException eo) {
-				continua = false;
+				eo.printStackTrace();
+				break;
 			}
 		}
+		
+		for(ClimaDoDia c : listaClima)
+			System.out.println(c);
+		
 		dis.close();
 		return listaClima;
 	}
+	
 	public ArrayList<ClimaDoDia> leBinarasdio(String path) {
 		
 		return null;
