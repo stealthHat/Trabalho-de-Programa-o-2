@@ -14,75 +14,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 import trabalho01.commons.AplicationDate;
+import trabalho01.exceptions.DuplicatedException;
+import trabalho01.exceptions.NullDataExeption;
+import trabalho01.exceptions.OrdenDataException;
 import trabalho01.model.ClimaDoDia;
 
 public class ClimaController {
 
-<<<<<<< HEAD
-    private ArrayList<ClimaDoDia> leBinario(String path) throws FileNotFoundException, IOException, ParseException{
-        DataInputStream dis = new DataInputStream(new FileInputStream(path));
-        
-        dis.readByte();
-        ArrayList<ClimaDoDia> listaClima = new ArrayList<ClimaDoDia>();
-        
-        while(true){
-            String data = "";
-            String direcao = "";
-            int velocidade;
-            int indicePluviometrico;
-            Double temperatura;
-            
-            try{
-                for(int i = 0; i < 11; i++)
-                    data += (char)dis.readByte();
-
-                data = data.trim();
-                
-                for(int i = 0; i < 4; i++)
-                    direcao += (char)dis.readByte();       
-                
-                velocidade = dis.readInt();
-                indicePluviometrico = dis.readInt();
-                temperatura = dis.readDouble();
-                
-                Date date = formataData(data);
-                
-                ClimaDoDia clima = new ClimaDoDia(date, direcao, velocidade, indicePluviometrico, temperatura);
-                listaClima.add(clima);
-                dis.readByte();
-            }catch(EOFException eo){
-                break;
-            }
-        }
-        dis.close();
-        return listaClima;
-    }
-    
-    public static Date formataData(String data) throws ParseException { 
-	if (data == null || data.equals(""))
-            return null;
-        
-        Date date = null;
-        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-        date = formatter.parse(data);
-        return date;
-    }
-    
-    public static void main(String[] args){
-        ClimaController climaController = new ClimaController();
-        ArrayList<ClimaDoDia> listaClima = new ArrayList<ClimaDoDia>();
-        try {
-            listaClima = climaController.leBinario("C:\\Users\\Alequis\\Dropbox\\Furb\\Ciência da Computação\\3º Semestre\\Programação II\\Trabalhos\\Trabalho 1\\DadosMeteorologicos-Exemplo.dat");
-        } catch (IOException ex) {
-            Logger.getLogger(ClimaController.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParseException ex) {
-            Logger.getLogger(ClimaController.class.getName()).log(Level.SEVERE, null, ex);
-        }
-       
-        for(ClimaDoDia c : listaClima)
-            System.out.println(c);
-    }
-=======
 	public ArrayList<ClimaDoDia> leBinario(String path) throws FileNotFoundException, IOException, ParseException {
 		AplicationDate aplicationDate = new AplicationDate();
 		DataInputStream dis = new DataInputStream(new FileInputStream(path));
@@ -123,36 +61,52 @@ public class ClimaController {
 		dis.close();
 		return listaClima;
 	}
+	public ArrayList<ClimaDoDia> leBinarasdio(String path) {
+		
+		return null;
+	}
 
-	public boolean checaLista(ArrayList<ClimaDoDia> clima) {
+	public void chacaDataa(ArrayList<ClimaDoDia> clima)
+			throws DuplicatedException, NullDataExeption, OrdenDataException {
+
 		Set<Date> set = new HashSet<Date>();
+		Date date = clima.get(0).getData();
 
 		for (ClimaDoDia setClima : clima) {
+			if (setClima.getData() == null)
+				throw new NullDataExeption();
+
 			if (set.contains(setClima.getData()))
-				return true;
+				throw new DuplicatedException();
+
+			if (setClima.getData().before(date))
+				throw new OrdenDataException();
 
 			set.add(setClima.getData());
+			date = setClima.getData();
 		}
-		return false;
 	}
 
-	public boolean checaListaa(ArrayList<ClimaDoDia> clima) {
-		Date date = clima.get(0).getData();
+	@SuppressWarnings("deprecation")
+	public void separaMes(ArrayList<ClimaDoDia> clima) {
+		ArrayList<ClimaDoDia> climaMes = new ArrayList<ClimaDoDia>();
+		Date mesAtual = clima.get(0).getData();
+
 		for (ClimaDoDia climaDoDia : clima) {
-			if (climaDoDia.getData().before(date))
-				return true;
-
-			date = climaDoDia.getData();
+			if (climaDoDia.getData().getMonth() == mesAtual.getMonth()) {
+				climaMes.add(climaDoDia);
+			} else {
+				criaArquivos(climaMes);
+				mesAtual = climaDoDia.getData();
+				climaMes.clear();
+			}
 		}
-		return false;
 	}
 
-	public void criaArquivos(ClimaDoDia clima) {
+	private void criaArquivos(ArrayList<ClimaDoDia> clima) {
 		AplicationDate aplicationDate = new AplicationDate();
-		Calendar calendar = aplicationDate.toCalendar(clima.getData());
-		File outFile = new File(calendar.YEAR + calendar.MONTH + ".dat");
+		File outFile = new File(
+				String.valueOf(clima.get(0).getData().getYear() + clima.get(0).getData().getMonth()) + ".dat");
 
 	}
-
->>>>>>> origin/master
 }
