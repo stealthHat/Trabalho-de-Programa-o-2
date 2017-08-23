@@ -5,6 +5,7 @@ import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -19,158 +20,162 @@ import java.util.Set;
 
 import trabalho01.commons.AplicationDate;
 import trabalho01.exceptions.DuplicatedException;
-import trabalho01.exceptions.NullDataExeption;
 import trabalho01.exceptions.OrdenDataException;
 import trabalho01.model.ClimaDoDia;
 
 public class ClimaController {
 
-    public ArrayList<ClimaDoDia> leBinario(String path) throws FileNotFoundException, IOException, ParseException {
-        AplicationDate aplicationDate = new AplicationDate();
-        DataInputStream dis = new DataInputStream(new FileInputStream(path));
-        ArrayList<ClimaDoDia> listaClima = new ArrayList<ClimaDoDia>();
+	public ArrayList<ClimaDoDia> leBinario(String path) throws FileNotFoundException, IOException, ParseException {
+		AplicationDate aplicationDate = new AplicationDate();
+		DataInputStream dis = new DataInputStream(new FileInputStream(path));
+		ArrayList<ClimaDoDia> listaClima = new ArrayList<ClimaDoDia>();
 
-        while (true) {
-            String data = "";
-            String direcao = "";
-            int velocidade;
-            int indicePluviometrico;
-            Double temperatura;
+		while (true) {
+			String data = "";
+			String direcao = "";
+			int velocidade;
+			int indicePluviometrico;
+			Double temperatura;
 
-            try {
-                data = dis.readUTF();
+			try {
+				data = dis.readUTF();
 
-                direcao += dis.readChar();
-                direcao += dis.readChar();
+				direcao += dis.readChar();
+				direcao += dis.readChar();
 
-                velocidade = dis.readInt();
-                indicePluviometrico = dis.readInt();
-                temperatura = dis.readDouble();
+				velocidade = dis.readInt();
+				indicePluviometrico = dis.readInt();
+				temperatura = dis.readDouble();
 
-                Date date = aplicationDate.formataData(data);
+				Date date = aplicationDate.formataData(data);
 
-                ClimaDoDia clima = new ClimaDoDia(date, direcao, velocidade, indicePluviometrico, temperatura);
-                listaClima.add(clima);
-            } catch (EOFException eo) {
-                eo.printStackTrace();
-                break;
-            }
-        }
+				ClimaDoDia clima = new ClimaDoDia(date, direcao, velocidade, indicePluviometrico, temperatura);
+				listaClima.add(clima);
+			} catch (EOFException eo) {
+				eo.printStackTrace();
+				break;
+			}
+		}
 
-        for (ClimaDoDia c : listaClima) {
-            System.out.println(c);
-        }
+		for (ClimaDoDia c : listaClima) {
+			System.out.println(c);
+		}
 
-        dis.close();
-        return listaClima;
-    }
+		dis.close();
+		return listaClima;
+	}
 
-    public void separaMes(ArrayList<ClimaDoDia> clima) throws IOException {
-        AplicationDate aplicationDate = new AplicationDate();
-        ArrayList<ClimaDoDia> climaMes = new ArrayList<>();
-        String mesAtual = aplicationDate.formataData(clima.get(0).getData(), "mm");
-        int size = clima.size();
+	public void separaMes(ArrayList<ClimaDoDia> clima) throws IOException {
+		AplicationDate aplicationDate = new AplicationDate();
+		ArrayList<ClimaDoDia> climaMes = new ArrayList<>();
+		String mesAtual = aplicationDate.formataData(clima.get(0).getData(), "mm");
+		int size = clima.size();
 
-        for (ClimaDoDia climaDoDia : clima) {
-            if (mesAtual.equals(aplicationDate.formataData(climaDoDia.getData(), "mm"))
-                    && clima.get(size - 1).equals(climaDoDia)) {
-                climaMes.add(climaDoDia);
-            } else {
-                climaMes.add(climaDoDia);
-                criaArquivos(climaMes);
-                mesAtual = aplicationDate.formataData(climaDoDia.getData(), "mm");
-                climaMes.clear();
-            }
-        }
-    }
+		for (ClimaDoDia climaDoDia : clima) {
+			if (mesAtual.equals(aplicationDate.formataData(climaDoDia.getData(), "mm"))
+					&& clima.get(size - 1).equals(climaDoDia)) {
+				climaMes.add(climaDoDia);
+			} else {
+				climaMes.add(climaDoDia);
+				criaArquivos(climaMes);
+				mesAtual = aplicationDate.formataData(climaDoDia.getData(), "mm");
+				climaMes.clear();
+			}
+		}
+	}
 
-    @SuppressWarnings("deprecation")
-    public void criaArquivos(ArrayList<ClimaDoDia> clima) throws FileNotFoundException, IOException {
+	@SuppressWarnings("unchecked")
+	public ArrayList<ClimaDoDia> carregarListaDoMes(String arquivo) throws IOException, ClassNotFoundException {
+		Path path = Paths.get(arquivo + ".dat");
+		ObjectInputStream file = new ObjectInputStream(new FileInputStream(path.toFile()));
+		ArrayList<ClimaDoDia> climas = (ArrayList<ClimaDoDia>) file.readObject();
+		return climas;
+	}
 
-        AplicationDate aplicationDate = new AplicationDate();
-        String data = aplicationDate.formataData(clima.get(0).getData(), "yyyy-mm");
+	public void criaArquivos(ArrayList<ClimaDoDia> clima) throws FileNotFoundException, IOException {
 
-        Path path = Paths.get(data + ".dat");
+		AplicationDate aplicationDate = new AplicationDate();
+		String data = aplicationDate.formataData(clima.get(0).getData(), "yyyy-mm");
 
-        ObjectOutputStream file = new ObjectOutputStream(new FileOutputStream(path.toFile()));
-        file.writeObject(clima);
-        file.close();
-    }
+		Path path = Paths.get(data + ".dat");
 
-    public String geraRelatorio(ArrayList<ClimaDoDia> climaDoMes) {
-        int acumuloChuva = 0;
-        int velocidade = 0;
-        ClimaDoDia maiorVelocidade = new ClimaDoDia();
-        ClimaDoDia menorVelocidade = climaDoMes.get(0);
-        double temperatura = 0;
-        ClimaDoDia maiorTemperatura = new ClimaDoDia();
-        ClimaDoDia menorTemperatura = climaDoMes.get(0);
+		ObjectOutputStream file = new ObjectOutputStream(new FileOutputStream(path.toFile()));
+		file.writeObject(clima);
+		file.close();
+	}
 
-        for (ClimaDoDia c : climaDoMes) {
-            acumuloChuva += c.getIndicePluviometrico();
-            velocidade += c.getVentoVelocidade();
-            temperatura += c.getTemperatura();
+	public String geraRelatorio(ArrayList<ClimaDoDia> climaDoMes) {
+		int acumuloChuva = 0;
+		int velocidade = 0;
+		ClimaDoDia maiorVelocidade = new ClimaDoDia();
+		ClimaDoDia menorVelocidade = climaDoMes.get(0);
+		double temperatura = 0;
+		ClimaDoDia maiorTemperatura = new ClimaDoDia();
+		ClimaDoDia menorTemperatura = climaDoMes.get(0);
 
-            if (c.getVentoVelocidade() > maiorVelocidade.getVentoVelocidade())
-                maiorVelocidade = c;
+		for (ClimaDoDia c : climaDoMes) {
+			acumuloChuva += c.getIndicePluviometrico();
+			velocidade += c.getVentoVelocidade();
+			temperatura += c.getTemperatura();
 
-            if (c.getVentoVelocidade() < menorVelocidade.getVentoVelocidade())
-                menorVelocidade = c;
+			if (c.getVentoVelocidade() > maiorVelocidade.getVentoVelocidade())
+				maiorVelocidade = c;
 
-            if (c.getTemperatura() > maiorTemperatura.getTemperatura())
-                maiorTemperatura = c;
+			if (c.getVentoVelocidade() < menorVelocidade.getVentoVelocidade())
+				menorVelocidade = c;
 
-            if (c.getTemperatura() < menorTemperatura.getTemperatura())
-                menorTemperatura = c;
-        }
+			if (c.getTemperatura() > maiorTemperatura.getTemperatura())
+				maiorTemperatura = c;
 
-        double velocidadeMedia = velocidade / climaDoMes.size();
-        double temperaturaMedia = temperatura / climaDoMes.size();
+			if (c.getTemperatura() < menorTemperatura.getTemperatura())
+				menorTemperatura = c;
+		}
 
-        AplicationDate aplicationDate = new AplicationDate();
+		double velocidadeMedia = velocidade / climaDoMes.size();
+		double temperaturaMedia = temperatura / climaDoMes.size();
 
-        DecimalFormat decimal = new DecimalFormat("0.0");
+		AplicationDate aplicationDate = new AplicationDate();
 
-        return "Mês: " + aplicationDate.formataData(climaDoMes.get(0).getData(), "mm/yyyy")
-                + "\n Quantidade de dias considerados: " + climaDoMes.size() + "\n Acumulado de chuva: "
-                + acumuloChuva + " mm \n Velocidade média do vento: " + decimal.format(velocidadeMedia)
-                + " km/h \n Maior velocidade do vento: " + maiorVelocidade.getVentoVelocidade() + "km/h em "
-                + aplicationDate.formataData(maiorVelocidade.getData(), "dd/mm/yyyy") + " na direção "
-                + maiorVelocidade.getVentoDirecao() + "\n Menor velocidade do vento: "
-                + menorVelocidade.getVentoVelocidade() + "km/h em "
-                + aplicationDate.formataData(menorVelocidade.getData(), "dd/mm/yyyy") + " na direção "
-                + menorVelocidade.getVentoDirecao() + "\n Temperatura média: " + decimal.format(temperaturaMedia) + " ºC"
-                + "\n Maior temperatura: " + decimal.format(maiorTemperatura.getTemperatura()) + "ºC em "
-                + aplicationDate.formataData(maiorTemperatura.getData(), "dd/mm/yyyy") + "\n Menor temperatura: "
-                + decimal.format(menorTemperatura.getTemperatura()) + "ºC em "
-                + aplicationDate.formataData(menorTemperatura.getData(), "dd/mm/yyyy");
-    }
+		DecimalFormat decimal = new DecimalFormat("0.0");
 
-    public void chacaDataa(ArrayList<ClimaDoDia> clima)
-            throws DuplicatedException, NullDataExeption, OrdenDataException {
+		return "Mï¿½s: " + aplicationDate.formataData(climaDoMes.get(0).getData(), "mm/yyyy")
+				+ "\n Quantidade de dias considerados: " + climaDoMes.size() + "\n Acumulado de chuva: " + acumuloChuva
+				+ " mm \n Velocidade mï¿½dia do vento: " + decimal.format(velocidadeMedia)
+				+ " km/h \n Maior velocidade do vento: " + maiorVelocidade.getVentoVelocidade() + "km/h em "
+				+ aplicationDate.formataData(maiorVelocidade.getData(), "dd/mm/yyyy") + " na direï¿½ï¿½o "
+				+ maiorVelocidade.getVentoDirecao() + "\n Menor velocidade do vento: "
+				+ menorVelocidade.getVentoVelocidade() + "km/h em "
+				+ aplicationDate.formataData(menorVelocidade.getData(), "dd/mm/yyyy") + " na direï¿½ï¿½o "
+				+ menorVelocidade.getVentoDirecao() + "\n Temperatura mï¿½dia: " + decimal.format(temperaturaMedia)
+				+ " ï¿½C" + "\n Maior temperatura: " + decimal.format(maiorTemperatura.getTemperatura()) + "ï¿½C em "
+				+ aplicationDate.formataData(maiorTemperatura.getData(), "dd/mm/yyyy") + "\n Menor temperatura: "
+				+ decimal.format(menorTemperatura.getTemperatura()) + "ï¿½C em "
+				+ aplicationDate.formataData(menorTemperatura.getData(), "dd/mm/yyyy");
+	}
 
-        Set<Date> set = new HashSet<Date>();
-        Date date = clima.get(0).getData();
-        // tirar null e mostrar a data que deu erro e validar o dia tbm
-        for (ClimaDoDia setClima : clima) {
+	public void chacaDataa(ArrayList<ClimaDoDia> clima) throws DuplicatedException, OrdenDataException {
 
-            if (set.contains(setClima.getData())) {
-                throw new DuplicatedException();
-            }
+		Set<Date> set = new HashSet<Date>();
+		Date date = clima.get(0).getData();
+		// tirar null e mostrar a data que deu erro e validar o dia tbm
+		for (ClimaDoDia setClima : clima) {
 
-            if (setClima.getData().before(date)) {
-                throw new OrdenDataException();
-            }
+			if (set.contains(setClima.getData())) {
+				throw new DuplicatedException(setClima);
+			}
 
-            set.add(setClima.getData());
-            date = setClima.getData();
-        }
-    }
-    
-    public ArrayList<ClimaDoDia> carregarListaDoMes(String arquivo) throws IOException, ClassNotFoundException{
-        Path path = Paths.get(arquivo + ".dat");
-        ObjectInputStream file = new ObjectInputStream(new FileInputStream(path.toFile()));
-        ArrayList<ClimaDoDia> climas = (ArrayList<ClimaDoDia>)file.readObject();
-        return climas;
-    }
+			if (setClima.getData().before(date)) {
+				throw new OrdenDataException(setClima);
+			}
+
+			set.add(setClima.getData());
+			date = setClima.getData();
+		}
+	}
+
+	public void escreveEmArquivo(String lines) throws IOException {
+		FileWriter fw = new FileWriter("relatorio.txt");
+		fw.write(lines);
+		fw.close();
+	}
 }
