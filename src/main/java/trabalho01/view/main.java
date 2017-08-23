@@ -1,17 +1,12 @@
 package trabalho01.view;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
 
 import trabalho01.controller.ClimaController;
-import trabalho01.exceptions.DuplicatedException;
-import trabalho01.exceptions.NullDataExeption;
-import trabalho01.exceptions.OrdenDataException;
-import trabalho01.model.ClimaDoDia;
 
 public class main {
+<<<<<<< HEAD
 
     public static void main(String[] args) {
         ClimaController a = new ClimaController();
@@ -41,3 +36,15 @@ public class main {
         }
     }
 }
+=======
+	public static void main(String[] args) {
+		ClimaController a = new ClimaController();
+		try {
+			a.separaMes(a.leBinario("/home/bmo/templates/Trabalho 1/DadosMeteorologicos-Exemplo2.dat"));
+		} catch (IOException | ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+}
+>>>>>>> origin/master
