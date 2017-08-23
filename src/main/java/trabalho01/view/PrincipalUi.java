@@ -34,6 +34,7 @@ public class PrincipalUi extends javax.swing.JFrame {
     public PrincipalUi() {
         initComponents();
         this.setLocationRelativeTo(null);
+        ativaPainelRelatorio(false);
     }
 
     /**
@@ -112,6 +113,7 @@ public class PrincipalUi extends javax.swing.JFrame {
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Relatório"));
 
+        relatorioTextArea.setEditable(false);
         relatorioTextArea.setColumns(20);
         relatorioTextArea.setRows(5);
         jScrollPane1.setViewportView(relatorioTextArea);
@@ -119,6 +121,11 @@ public class PrincipalUi extends javax.swing.JFrame {
         jLabel2.setText("Mês:");
 
         gerarRelatorioButton.setText("Gerar relatório");
+        gerarRelatorioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                gerarRelatorioButtonActionPerformed(evt);
+            }
+        });
 
         salvarRelatorioCheckBox.setText("Salvar relatório em arquivo texto");
 
@@ -205,6 +212,28 @@ public class PrincipalUi extends javax.swing.JFrame {
             checaArquivoBinario();
     }//GEN-LAST:event_processarButtonActionPerformed
 
+    private void gerarRelatorioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gerarRelatorioButtonActionPerformed
+        
+        ClimaController climaController = new ClimaController();
+        
+        ArrayList<ClimaDoDia> listaDoMes = new ArrayList<>();
+        try {
+            listaDoMes = climaController.carregarListaDoMes("2015-10");
+        } catch (IOException | ClassNotFoundException ex) {
+            Logger.getLogger(PrincipalUi.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(null, "Arquivo inválido.");
+        }
+        
+        relatorioTextArea.setText(climaController.geraRelatorio(listaDoMes));
+    }//GEN-LAST:event_gerarRelatorioButtonActionPerformed
+
+    private void ativaPainelRelatorio(boolean estado){
+        mesesComboBox.setEnabled(estado);
+        salvarRelatorioCheckBox.setEnabled(estado);
+        gerarRelatorioButton.setEnabled(estado);
+        relatorioTextArea.setEnabled(estado);
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -247,6 +276,7 @@ public class PrincipalUi extends javax.swing.JFrame {
         try {
             climas = climaController.leBinario(entradaTextField.getText());
             climaController.chacaDataa(climas);
+            ativaPainelRelatorio(true);
         } catch (IOException | ParseException ex) {
             Logger.getLogger(PrincipalUi.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showMessageDialog(null, "Arquivo corrompido. Submeta outro arquivo.");

@@ -13,7 +13,7 @@ public class main {
         ClimaController a = new ClimaController();
         try {
             ArrayList<ClimaDoDia> clima = a.leBinario("C:\\Users\\Alequis\\Dropbox\\Furb\\Ciência da Computação\\3º Semestre\\Programação II\\Trabalhos\\Trabalho 1\\DadosMeteorologicos-Exemplo.dat");
-            System.out.println(a.geraRelatorio(clima));
+            a.separaMes(clima);
 
         } catch (IOException | ParseException e) {
             // TODO Auto-generated catch block

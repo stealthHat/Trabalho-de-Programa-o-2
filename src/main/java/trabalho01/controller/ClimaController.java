@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -164,5 +165,12 @@ public class ClimaController {
             set.add(setClima.getData());
             date = setClima.getData();
         }
+    }
+    
+    public ArrayList<ClimaDoDia> carregarListaDoMes(String arquivo) throws IOException, ClassNotFoundException{
+        Path path = Paths.get(arquivo + ".dat");
+        ObjectInputStream file = new ObjectInputStream(new FileInputStream(path.toFile()));
+        ArrayList<ClimaDoDia> climas = (ArrayList<ClimaDoDia>)file.readObject();
+        return climas;
     }
 }
