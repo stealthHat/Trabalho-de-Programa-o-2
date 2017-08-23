@@ -6,15 +6,28 @@
 package trabalho01.view;
 
 import java.io.File;
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import trabalho01.controller.ClimaController;
+import trabalho01.exceptions.DuplicatedException;
+import trabalho01.exceptions.NullDataExeption;
+import trabalho01.exceptions.OrdenDataException;
+import trabalho01.model.ClimaDoDia;
 
 /**
  *
  * @author Alequis
  */
 public class PrincipalUi extends javax.swing.JFrame {
-
+    
+    ArrayList<ClimaDoDia> climas;
+    
     /**
      * Creates new form PrincipalUi
      */
@@ -43,6 +56,7 @@ public class PrincipalUi extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         gerarRelatorioButton = new javax.swing.JButton();
         mesesComboBox = new javax.swing.JComboBox<>();
+        salvarRelatorioCheckBox = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -60,6 +74,11 @@ public class PrincipalUi extends javax.swing.JFrame {
         jLabel1.setText("Arquivo:");
 
         processarButton.setText("Processar arquivo");
+        processarButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                processarButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -101,22 +120,28 @@ public class PrincipalUi extends javax.swing.JFrame {
 
         gerarRelatorioButton.setText("Gerar relatório");
 
+        salvarRelatorioCheckBox.setText("Salvar relatório em arquivo texto");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 672, Short.MAX_VALUE)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addGap(18, 18, 18)
-                        .addComponent(mesesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(114, 114, 114)
-                        .addComponent(gerarRelatorioButton)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 672, Short.MAX_VALUE)
                 .addContainerGap())
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(280, 280, 280)
+                .addComponent(gerarRelatorioButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(111, 111, 111)
+                .addComponent(jLabel2)
+                .addGap(18, 18, 18)
+                .addComponent(mesesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(salvarRelatorioCheckBox)
+                .addGap(107, 107, 107))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -124,10 +149,12 @@ public class PrincipalUi extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(gerarRelatorioButton)
-                    .addComponent(mesesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(mesesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(salvarRelatorioCheckBox))
                 .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
+                .addComponent(gerarRelatorioButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -148,8 +175,8 @@ public class PrincipalUi extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -170,6 +197,13 @@ public class PrincipalUi extends javax.swing.JFrame {
             entradaTextField.setText(file.getPath());
         }
     }//GEN-LAST:event_procurarButtonActionPerformed
+
+    private void processarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_processarButtonActionPerformed
+        if(entradaTextField.getText().equals(""))
+            JOptionPane.showMessageDialog(null, "Selecione um arquivo binário primeiro.");
+        else
+            checaArquivoBinario();
+    }//GEN-LAST:event_processarButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -206,7 +240,24 @@ public class PrincipalUi extends javax.swing.JFrame {
             }
         });
     }
-
+    
+    private void checaArquivoBinario(){
+        ClimaController climaController = new ClimaController();
+        
+        try {
+            climas = climaController.leBinario(entradaTextField.getText());
+            climaController.chacaDataa(climas);
+        } catch (IOException | ParseException ex) {
+            Logger.getLogger(PrincipalUi.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(null, "Arquivo corrompido. Submeta outro arquivo.");
+        } catch (DuplicatedException | OrdenDataException ex) {
+            Logger.getLogger(PrincipalUi.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(null, ex.getMessage());
+        } catch (NullDataExeption ex) {
+            Logger.getLogger(PrincipalUi.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField entradaTextField;
     private javax.swing.JButton gerarRelatorioButton;
@@ -219,5 +270,6 @@ public class PrincipalUi extends javax.swing.JFrame {
     private javax.swing.JButton processarButton;
     private javax.swing.JButton procurarButton;
     private javax.swing.JTextArea relatorioTextArea;
+    private javax.swing.JCheckBox salvarRelatorioCheckBox;
     // End of variables declaration//GEN-END:variables
 }

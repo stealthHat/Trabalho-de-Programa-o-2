@@ -1,9 +1,11 @@
 package trabalho01.commons;
 
 import java.text.DateFormat;
+import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -18,7 +20,6 @@ public class AplicationDate {
     }
     
     public String formataData(Date date, String format){
-        SimpleDateFormat df = new SimpleDateFormat(format);
-        return df.format(date);
+        return new SimpleDateFormat(format).format(date);
     }
 }
