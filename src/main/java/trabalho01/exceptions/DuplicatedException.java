@@ -10,6 +10,6 @@ public class DuplicatedException extends Exception {
 	private static final long serialVersionUID = 6548610719235298413L;
 
 	public DuplicatedException(ClimaDoDia setClima) {
-		super(setClima.getData().toString() + "esta data esta duplicada");
+		super("Dia " + setClima.getData().toString() + "está repetido.");
 	}
 }
