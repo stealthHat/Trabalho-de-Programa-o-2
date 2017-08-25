@@ -60,7 +60,8 @@ public class ClimaController {
         dis.close();
         return listaClima;
     }
-    
+
+    /*
     public ArrayList<String> separaMes(ArrayList<ClimaDoDia> clima) throws IOException {
         AplicationDate aplicationDate = new AplicationDate();
         ArrayList<ClimaDoDia> climaMes = new ArrayList<>();
@@ -69,7 +70,7 @@ public class ClimaController {
         int size = clima.size();
 
         for (ClimaDoDia climaDoDia : clima) {
-            if (mesAtual.equals(aplicationDate.formataData(climaDoDia.getData(), "mm"))) {
+            if (mesAtual.equals(aplicationDate.formataData(climaDoDia.getData(), "mm")) && !clima.get(size - 1).equals(climaDoDia)) {
                 climaMes.add(climaDoDia);
             } else {
                 criaArquivos(climaMes);
@@ -79,8 +80,41 @@ public class ClimaController {
                 climaMes.add(climaDoDia);
                 if (clima.get(size - 1).equals(climaDoDia)){
                     criaArquivos(climaMes);
-                    meses.add(aplicationDate.formataData(climaMes.get(0).getData(), "yyyy-mm"));
+                    if(!meses.contains(aplicationDate.formataData(climaMes.get(0).getData(), "yyyy-mm")))
+                        meses.add(aplicationDate.formataData(climaMes.get(0).getData(), "yyyy-mm"));
                 }
+            }
+        }
+        return meses;
+    }
+     */
+
+    public ArrayList<String> separaMes(ArrayList<ClimaDoDia> clima) throws IOException {
+        AplicationDate aplicationDate = new AplicationDate();
+        ArrayList<ClimaDoDia> climaMes = new ArrayList<>();
+        ArrayList<String> meses = new ArrayList<>();
+        String mesAtual = aplicationDate.formataData(clima.get(0).getData(), "mm");
+        int size = clima.size();
+
+        for (ClimaDoDia climaDoDia : clima) {
+            if (mesAtual.equals(aplicationDate.formataData(climaDoDia.getData(), "mm")) && !clima.get(size - 1).equals(climaDoDia)) {
+                climaMes.add(climaDoDia);
+            } else {
+                if (clima.get(size - 1).equals(climaDoDia)) {
+                    criaArquivos(climaMes);
+
+                }
+                criaArquivos(climaMes);
+                meses.add(aplicationDate.formataData(climaMes.get(0).getData(), "yyyy-mm"));
+                climaMes.clear();
+                climaMes.add(climaDoDia);
+                if (clima.get(size - 1).equals(climaDoDia) && !mesAtual.equals(aplicationDate.formataData(climaDoDia.getData(), "mm"))) {
+                    criaArquivos(climaMes);
+                    if (!meses.contains(aplicationDate.formataData(climaMes.get(0).getData(), "yyyy-mm"))) {
+                        meses.add(aplicationDate.formataData(climaMes.get(0).getData(), "yyyy-mm"));
+                    }
+                }
+                mesAtual = aplicationDate.formataData(climaDoDia.getData(), "mm");
             }
         }
         return meses;
@@ -95,7 +129,7 @@ public class ClimaController {
     }
 
     private void criaArquivos(ArrayList<ClimaDoDia> clima) throws FileNotFoundException, IOException {
-        
+
         AplicationDate aplicationDate = new AplicationDate();
         String data = aplicationDate.formataData(clima.get(0).getData(), "yyyy-mm");
 
@@ -120,17 +154,21 @@ public class ClimaController {
             velocidade += c.getVentoVelocidade();
             temperatura += c.getTemperatura();
 
-            if (c.getVentoVelocidade() > maiorVelocidade.getVentoVelocidade())
+            if (c.getVentoVelocidade() > maiorVelocidade.getVentoVelocidade()) {
                 maiorVelocidade = c;
+            }
 
-            if (c.getVentoVelocidade() < menorVelocidade.getVentoVelocidade())
+            if (c.getVentoVelocidade() < menorVelocidade.getVentoVelocidade()) {
                 menorVelocidade = c;
+            }
 
-            if (c.getTemperatura() > maiorTemperatura.getTemperatura())
+            if (c.getTemperatura() > maiorTemperatura.getTemperatura()) {
                 maiorTemperatura = c;
+            }
 
-            if (c.getTemperatura() < menorTemperatura.getTemperatura())
+            if (c.getTemperatura() < menorTemperatura.getTemperatura()) {
                 menorTemperatura = c;
+            }
         }
 
         double velocidadeMedia = velocidade / climaDoMes.size();
@@ -161,19 +199,19 @@ public class ClimaController {
         Date date = clima.get(0).getData();
         for (ClimaDoDia setClima : clima) {
 
-            if (set.contains(setClima.getData()))
+            if (set.contains(setClima.getData())) {
                 throw new DuplicatedException(setClima);
+            }
 
-            //if (setClima.getData().before(date))
-            //    throw new OrdenDataException(setClima, date);
-
+            if (setClima.getData().before(date))
+                throw new OrdenDataException(setClima, date);
             set.add(setClima.getData());
             date = setClima.getData();
         }
     }
 
-    public void escreveEmArquivo(String lines) throws IOException {
-        FileWriter fw = new FileWriter("relatorio.txt");
+    public void escreveEmArquivo(String lines, String path) throws IOException {
+        FileWriter fw = new FileWriter(path + "\\relatorio.txt");
         fw.write(lines);
         fw.close();
     }

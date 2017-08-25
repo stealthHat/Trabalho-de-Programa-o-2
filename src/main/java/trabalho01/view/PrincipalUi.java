@@ -233,8 +233,18 @@ public class PrincipalUi extends javax.swing.JFrame {
         String saida = climaController.geraRelatorio(listaDoMes);
         
         if(salvarRelatorioCheckBox.isSelected()){
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Procurar diretório de saída");
+
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            int retorno = fileChooser.showOpenDialog(this);
+
+            String path = "";
+            if(retorno == JFileChooser.APPROVE_OPTION)
+                path = fileChooser.getSelectedFile().getPath();
+            
             try {
-                climaController.escreveEmArquivo(saida);
+                climaController.escreveEmArquivo(saida, path);
                 JOptionPane.showMessageDialog(null, "Relatório salvo com sucesso.");
             } catch (IOException ex) {
                 Logger.getLogger(PrincipalUi.class.getName()).log(Level.SEVERE, null, ex);
@@ -296,6 +306,7 @@ public class PrincipalUi extends javax.swing.JFrame {
             ArrayList<String> meses = climaController.separaMes(climas);
             ativaPainelRelatorio(true);
             
+            mesesComboBox.removeAllItems();
             for(String s : meses)
                 mesesComboBox.addItem(s);                
             
